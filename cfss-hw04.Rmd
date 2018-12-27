@@ -95,15 +95,257 @@ Perform the same operation using `map_dbl()` and an anonymous function.
 map_dbl(x, function(x) x^2)
 ```
 
+## Pythagorean Theorem
+___
+Given the sides of *a* and *b*, find the hypotenuse *c*.
 
+This problem can be solved in cumulative steps. 
 
+The hypotenuse is equal to:
 
+$$c = \sqrt{a^2+b^2}$$
 
+We can use a simple 3-4-5 triangle to make sure our code works. Let's say we know that *a* = 3 and *b* = 4. First, solve the problem with real numbers.
 
+```{r}
+sqrt(
+  3^2 + 4^2
+)
+```
 
+Next, plug in variables.
 
+```{r}
+# Sides
+a = 3
+b = 4
 
+# Solve for hypotenuse
+c <- sqrt(
+  a^2 + b^2
+) 
 
+# Print the hypotenuse
+c
+```
+
+### Simple Function
+
+Here is a simple function that works when we supply both *a* and *b*.
+
+```{r}
+# Create function
+pythagorean <- function (a, b) {
+  c <- sqrt(
+    a^2 + b^2
+  )
+  c
+}
+
+# Test function
+pythagorean(a = a, b = b)
+```
+
+### Complex Function
+
+If we know the hypotenuse and either *a* or *b*, the equation changes:
+
+$$a = \sqrt{c^2 - b^2} \\ b = \sqrt{c^2 - a^2}$$
+
+Let's incorporate this conditional difference into our function. Instead of setting a, b, or c to `NULL`, we can use `missing()` inside of an `if()` statement to [specify optional parameters](https://stackoverflow.com/questions/28370249/correct-way-to-specifiy-optional-arguments-in-r-functions).
+
+```{r}
+# Create complex function
+pythagorean <- function (a, b, c) {
+  
+  # Solve for a
+  if (missing(a)) {
+    a <- sqrt(
+      c^2 - b^2
+    )
+    a
+  
+  # Solve for b
+  } else if (missing(b)) {
+    b <- sqrt(
+      c^2 - a^2
+    )
+    b
+  
+  # Solve for c
+  } else {
+    c <- sqrt(
+      a^2 + b^2
+    )
+    c
+  }
+}
+
+# Test function on random values
+pythagorean(a = 3, b = 4)
+pythagorean(a = 6, c = 10)
+pythagorean(b = 7, c = 11)
+```
+
+### Check for Errors
+
+Now let's add some error checking to make our function more robust. If we want this R markdown document to [knit properly with errors in the chunks](https://stackoverflow.com/questions/34137797/rmarkdown-run-code-and-display-errors-in-document), we must set the option `error=TRUE`.
+
+Without making any changes, we see that our function will throw an error if only one argument is supplied.
+
+```{r error=TRUE}
+pythagorean(a = 2)
+```
+
+This is really convenient.
+
+```{r error=TRUE}
+pythagorean(b = 2)
+```
+
+R is smart enough to know that the equations cannot be evaluated with a missing variable.
+
+```{r error=TRUE}
+pythagorean(c = 2)
+```
+
+Thus, all we must do is specify a `stop()` condition for when a user: 
+
+* supplies all three arguments at once; or
+* supplies a non-numeric argument.
+
+```{r}
+# Create complex function
+pythagorean <- function (a, b, c) {
+  
+  # Check for all three arguments at once
+  if (!is.na(a) && !is.na(b) && !is.na(c)) {
+    stop("Cannot supply all sides of the triangle.")
+  }
+  
+  # Check for non-numeric arguments
+  if (!is.numeric(a) || !is.numeric(b) || !is.numeric(c)) {
+    stop("Arguments must be numerics.")
+  }
+  
+  # Solve for a
+  if (missing(a)) {
+    a <- sqrt(
+      c^2 - b^2
+    )
+    a
+  
+  # Solve for b
+  } else if (missing(b)) {
+    b <- sqrt(
+      c^2 - a^2
+    )
+    b
+  
+  # Solve for c
+  } else {
+    c <- sqrt(
+      a^2 + b^2
+    )
+    c
+  }
+}
+```
+
+What happens if we supply all three arguments at once?
+
+```{r error=TRUE}
+pythagorean(a = 2, b = 5, c = 7)
+```
+
+What if we supply the English equivalent of 2?
+
+```{r error=TRUE}
+pythagorean(a = "two", b = 5)
+```
+
+Our function is not evaluating the non-numeric `if()` statement. Will this behavior change if we set all values to `NULL`?
+
+This is a workaround that requires `is.null()` instead of `missing()`. Without `missing()`, the addition of an error check for when a user supplies only one side of the triangle is necessary.
+
+The error check for all arguments at once will stay the same.
+
+In order to properly evaluate whether an argument is non-numeric, the argument cannot be missing (i.e., cannot be set to `NULL`).
+
+```{r}
+# Create complex function
+pythagorean <- function (a = NULL, b = NULL, c = NULL) {
+  
+  ### Error Checking ###
+  
+  # Check for single arguments
+  if ((is.null(a) && is.null(b)) || (is.null(b) && is.null(c)) || (is.null(a) && is.null(c))) {
+    stop("Must supply at least two arguments.")
+  }
+  
+  # Check for all three arguments at once
+  if (!is.null(a) && !is.null(b) && !is.null(c)) {
+    stop("Cannot supply all sides of the triangle.")
+  }
+  
+  # Check for non-numeric argument in a
+  if (!is.numeric(a) && !is.null(a)) {
+    stop("Argument `a` must be numeric.")
+  }
+  
+  # Check for non-numeric argument in b
+  if (!is.numeric(b) && !is.null(b)) {
+    stop("Argument `b` must be numeric.")
+  }
+  
+  # Check for non-numeric argument in c
+  if (!is.numeric(c) && !is.null(c)) {
+    stop("Argument `c` must be numeric.")
+  }
+  
+  ### Pythagorean Theorem ###
+  
+  # Solve for a
+  if (is.null(a)) {
+    a <- sqrt(
+      c^2 - b^2
+    )
+    a
+    
+    # Solve for b
+  } else if (is.null(b)) {
+    b <- sqrt(
+      c^2 - a^2
+    )
+    b
+    
+    # Solve for c
+  } else {
+    c <- sqrt(
+      a^2 + b^2
+    )
+    c
+  }
+}
+```
+
+Does `pythagorean()` throw an error when the only one side of the triangle is specified?
+
+```{r error=TRUE}
+pythagorean(a = 3)
+```
+
+Does `pythagorean()` throw an error if all three arguments are specified?
+
+```{r error=TRUE}
+pythagorean(2, 6, 11)
+```
+
+Does `pythagorean()` throw an error if the argument is non-numeric?
+
+```{r error=TRUE}
+pythagorean(b = 3, c = "eleven")
+```
 
 # Session Info
 ___
