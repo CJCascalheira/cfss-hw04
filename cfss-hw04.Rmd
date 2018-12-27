@@ -20,6 +20,80 @@ Load dependencies.
 library(tidyverse) # utility
 ```
 
+## Unique Values
+___
+Recall the structure of the `iris` data frame.
+
+```{r}
+str(iris)
+```
+
+Determine the number of unique values within each column with a `for` loop. First, solve the problem for one column.
+
+```{r}
+length(unique(iris[[1]]))
+```
+
+Apply abstraction.
+
+```{r}
+# Preallocate space for efficiency
+output <- vector(mode = "numeric", length = ncol(iris))
+
+# Iterate over each variable
+for (i in seq_along(iris)) {
+  output[[i]] <- length(unique(iris[[i]]))
+}
+
+# Print number of unique values
+output
+
+# Assign names to the output
+names(output) <- names(iris)
+output
+```
+
+Perform the same operation with `map_int()` and an anonymous function.
+
+```{r}
+map_int(iris, function(df) length(unique(df)))
+```
+
+## Square of Each Element
+___
+Initialize the vector `x`.
+
+```{r}
+x <- seq(from = 1, to = 30)
+x
+```
+
+Solve the problem for the third value in the vector `x`.
+
+```{r}
+x[[3]]^2
+```
+
+Apply abstraction.
+
+```{r}
+# Preallocate memory for efficiency
+output <- vector(mode = "numeric", length = length(x))
+
+# Iterate over each element
+for (i in seq_along(x)) {
+  output[[i]] <- x[[i]]^2
+}
+
+# Print output
+output
+```
+
+Perform the same operation using `map_int()`.
+
+```{r}
+
+```
 
 
 
