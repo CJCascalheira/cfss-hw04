@@ -89,11 +89,12 @@ for (i in seq_along(x)) {
 output
 ```
 
-Perform the same operation using `map_int()`.
+Perform the same operation using `map_dbl()` and an anonymous function.
 
 ```{r}
-
+map_dbl(x, function(x) x^2)
 ```
+
 
 
 
