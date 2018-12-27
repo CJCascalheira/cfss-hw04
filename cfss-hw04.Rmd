@@ -1,0 +1,37 @@
+---
+title: "CFSS Homework 04"
+author: "Cory J. Cascalheira"
+date: "December 27, 2018"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Part 1
+___
+Load dependencies.
+
+```{r message=FALSE}
+library(tidyverse) # utility
+```
+
+
+
+
+
+
+
+
+
+
+
+# Session Info
+___
+```{r}
+devtools::session_info()
+```
