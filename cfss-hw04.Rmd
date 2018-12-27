@@ -10,6 +10,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/GitHub/cfss-hw04/")
 ```
 
 # Part 1
@@ -19,6 +20,8 @@ Load dependencies.
 ```{r message=FALSE}
 library(tidyverse) # utility
 ```
+
+For the second part of this assignment, I will need to use relative paths. If I had created an R project, this would have been simple since the working directory would have been the project folder. I did not, so let's set the working directory now. In an R Markdown document, `setwd()` does not work. Instead, we must set the knitr option in the setup chunk using `knitr::opts_knit$set(root.dir = "~/GitHub/cfss-hw04/")`.
 
 ## Unique Values
 ___
@@ -346,6 +349,21 @@ Does `pythagorean()` throw an error if the argument is non-numeric?
 ```{r error=TRUE}
 pythagorean(b = 3, c = "eleven")
 ```
+
+# Part 2
+___
+I downloaded 9 of the economic indicators directly from the [World Bank](https://data.worldbank.org/indicator). After unzipping the files, I placed each `csv` into my `data_world_bank` folder.
+
+First, let's find all the file names in the appropriate folder. We don't care about the names *per se* since they all end in `csv`. Remember to escape the period.
+
+```{r}
+files <- dir(path = "data_world_bank/", pattern = "\\.csv$")
+files
+```
+
+
+
+
 
 # Session Info
 ___
