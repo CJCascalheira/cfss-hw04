@@ -354,11 +354,130 @@ pythagorean(b = 3, c = "eleven")
 ___
 I downloaded 9 of the economic indicators directly from the [World Bank](https://data.worldbank.org/indicator). After unzipping the files, I placed each `csv` into my `data_world_bank` folder.
 
-First, let's find all the file names in the appropriate folder. We don't care about the names *per se* since they all end in `csv`. Remember to escape the period.
+First, let's find all the file names in the appropriate folder. We don't care about the names *per se* since they all end in `csv`. In the call to `dir()`, remember to escape the period.
 
 ```{r}
-files <- dir(path = "data_world_bank/", pattern = "\\.csv$")
+files <- dir(path = "data_world_bank/", pattern = "\\.csv$", full.names = TRUE)
 files
+```
+
+## Create Function
+___
+Each file has blank space at the top, so before we run an iterative function on each file, let's practice importing the information for one file.
+
+```{r message=FALSE, warning=FALSE}
+dummy <- map("data_world_bank/API_BM.GSR.ROYL.CD_DS2_en_csv_v2_10232025.csv", read_csv, skip = 2)
+head(dummy[[1]])
+```
+
+Our function can rename the variables and tranforms each data frame into long format.
+
+```{r}
+dummy[[1]] %>%
+  # Remove empty variables
+  select(-starts_with("X")) %>%
+  # Rename columns using snake_case
+  rename(
+    "country_name" = "Country Name",
+    "country_code" = "Country Code",
+    "indicator_name" = "Indicator Name",
+    "indicator_code" = "Indicator Code"
+  ) %>%
+  # Gather years into single column
+  gather(key = year, value = amount, -c(1:4))
+```
+
+At this point, we are ready to apply abstraction to the steps so far.
+
+```{r}
+condense <- function (files) {
+  
+  # Read all csv into a list
+  file_list <- files %>%
+    map(read_csv, skip = 2)
+  
+  # Prepare new list
+  output <- vector(mode = "list", length = length(files))
+  
+  # Clean each data frame
+  for (i in seq_along(files)) {
+    output[[i]] <- file_list[[i]] %>%
+      
+      # Remove empty variables
+      select(-starts_with("X")) %>%
+      
+      # Rename columns using snake_case
+      rename(
+        "country_name" = "Country Name",
+        "country_code" = "Country Code",
+        "indicator_name" = "Indicator Name",
+        "indicator_code" = "Indicator Code"
+      ) %>%
+      
+      # Gather years into single column
+      gather(key = year, value = amount, -c(1:4))
+  }
+  
+  output
+  
+}
+```
+
+Does the function work as expected?
+
+```{r message=FALSE, warning=FALSE}
+(trial <- condense(files = files))
+```
+
+Now we want the function to combine each nested data frame into one master tibble. [We could](https://stackoverflow.com/questions/2851327/convert-a-list-of-data-frames-into-one-data-frame) combine a `do.call()` with `rbind()`. There are also other, deprecated options such as `plyr::rbind.fill` or `rbind_all()`.
+
+Instead, we can simply call `bind_rows()`.
+
+```{r}
+bind_rows(trial)
+```
+
+Let's incorporate this small change into our function.
+
+```{r}
+condense <- function (files) {
+  
+  # Read all csv into a list
+  file_list <- files %>%
+    map(read_csv, skip = 2)
+  
+  # Prepare new list
+  output <- vector(mode = "list", length = length(files))
+  
+  # Clean each data frame
+  for (i in seq_along(files)) {
+    output[[i]] <- file_list[[i]] %>%
+      
+      # Remove empty variables
+      select(-starts_with("X")) %>%
+      
+      # Rename columns using snake_case
+      rename(
+        "country_name" = "Country Name",
+        "country_code" = "Country Code",
+        "indicator_name" = "Indicator Name",
+        "indicator_code" = "Indicator Code"
+      ) %>%
+      
+      # Gather years into single column
+      gather(key = year, value = amount, -c(1:4))
+  }
+  
+  # Bind all data frames into master tibble
+  bind_rows(output)
+  
+}
+```
+
+And try it.
+
+```{r warning=FALSE, message=FALSE}
+(indicators <- condense(files))
 ```
 
 
