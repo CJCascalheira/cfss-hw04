@@ -480,9 +480,146 @@ And try it.
 (indicators <- condense(files))
 ```
 
+## Brief Report
+___
+Since we will produce graphs, let's set the default theme.
 
+```{r}
+theme_set(theme_minimal())
+```
 
+Review indicators to analyze.
 
+```{r}
+unique(indicators$indicator_name)
+```
+
+Let's analyze the central government debt and GDP.
+
+```{r}
+debt_gdp <- indicators %>%
+  # Select indicators of interest
+  filter(indicator_name == "Central government debt, total (% of GDP)" |
+         indicator_name == "GDP (current US$)") %>%
+  # Remove missing values
+  filter(!is.na(amount))
+```
+
+We can simplify the name of each indicator and transform `year` into an integer.
+
+```{r}
+# Simplify indicator
+debt_gdp$indicator_name <- fct_recode(factor(debt_gdp$indicator_name),
+  "debt" = "Central government debt, total (% of GDP)",
+  "gdp" = "GDP (current US$)")
+
+# Year as integer
+debt_gdp$year <- as.integer(debt_gdp$year)
+```
+
+### Exploratory Analysis
+
+What does GDP look like for the world?
+
+```{r}
+debt_gdp %>%
+  filter(country_name == "World") %>%
+  # Scale large number
+  mutate(amount = amount / 1000000000000) %>%
+  ggplot(aes(x = year, y = amount)) +
+    geom_line(color = "cadetblue", size = 1) +
+    # Set custom breaks
+    scale_x_continuous(breaks = seq(1960, 2017, by = 5), expand = c(0, 0)) +
+    # Add dollar sign to values along y-axis
+    scale_y_continuous(labels = scales::dollar) +
+    labs(title = "Global Gross Domestic Product (GDP)",
+         subtitle = "1960 - 2017",
+         caption = "Source: World Bank",
+         y = "Amount (Trillions)",
+         x = "Year")
+```
+
+What does GDP look like for the United States, China, and the European Union?
+
+```{r}
+# Vector of country names
+countries <- c("United States", "China", "European Union")
+
+# Visualize GDP 
+debt_gdp %>%
+  filter(country_name %in% countries & indicator_name == "gdp") %>%
+  # Scale large number
+  mutate(amount = amount / 1000000000000) %>%
+  ggplot(aes(x = year, y = amount, color = country_name)) +
+    geom_line(size = 1) +
+    scale_color_brewer(palette = "Paired") +
+    # Set custom breaks
+    scale_x_continuous(breaks = seq(1960, 2017, by = 5), expand = c(0, 0)) +
+    guides(color = guide_legend(title = "Country")) +
+    # Add dollar sign to values along y-axis
+    scale_y_continuous(labels = scales::dollar) +
+    labs(title = "Gross Domestic Product (GDP)",
+         subtitle = "1960 - 2017",
+         caption = "Source: World Bank",
+         y = "Amount (Trillions)",
+         x = "Year") +
+    # Move legend to top
+    theme(legend.position = "top")
+```
+
+### U.S. vs U.K.
+
+Let's compare the GDP between the United States and United Kingdom.
+
+```{r}
+# Vector of country names
+western <- c("United States", "United Kingdom")
+
+# Visualize GDP 
+debt_gdp %>%
+  filter(country_name %in% western & indicator_name == "gdp") %>%
+  # Scale large number
+  mutate(amount = amount / 1000000000000) %>%
+  ggplot(aes(x = year, y = amount, color = country_name)) +
+    geom_line(size = 1) +
+    scale_color_brewer(palette = "Paired") +
+    # Set custom breaks
+    scale_x_continuous(breaks = seq(1960, 2017, by = 5), expand = c(0, 0)) +
+    guides(color = guide_legend(title = "Country")) +
+    # Add dollar sign to values along y-axis
+    scale_y_continuous(labels = scales::dollar) +
+    labs(title = "Gross Domestic Product (GDP)",
+         subtitle = "1960 - 2017",
+         caption = "Source: World Bank",
+         y = "Amount (Trillions)",
+         x = "Year") +
+    # Move legend to top
+    theme(legend.position = "top")
+```
+
+How do the United States and United Kingdom compare on debt? Remember, the debt is measured as percent of GDP.
+
+```{r}
+# Visualize GDP 
+debt_gdp %>%
+  filter(country_name %in% western & indicator_name == "debt") %>%
+  mutate(amount = amount / 100) %>%
+  ggplot(aes(x = year, y = amount, color = country_name)) +
+    geom_line(size = 1) +
+    scale_y_continuous(limits = c(0, 1.3), labels = scales::percent, expand = c(0, 0)) +
+    # Set custom breaks
+    scale_x_continuous(breaks = seq(1970, 2018, by = 3), expand = c(0, 0)) +
+    scale_color_brewer(palette = "Paired") +
+    guides(color = guide_legend(title = "Country")) +
+    labs(title = "National Debt",
+         caption = "Source: World Bank",
+         y = "Percent of GDP",
+         x = "Year") +
+    # Move legend to top
+    theme(legend.position = "top")
+```
+
+The debt for the United States has reached 100% of GDP by 2017, but the nation's GDP continues to climb in what appears to be an exponential trend. The United Kingdom, on the other hand, reached a debt that was 120% of GDP in 2017. Growth appears to have plateaued. The graph on national debt evinces a sharp rise in debt for both countries after the global recession of 2008.
 
 # Session Info
 ___
